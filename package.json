@@ -57,6 +57,9 @@
   "bugs": {
     "url": "https://github.com/ShiyuCheng2018/textric/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=20"
   },
