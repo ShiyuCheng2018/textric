@@ -58,7 +58,7 @@
     "url": "https://github.com/ShiyuCheng2018/textric/issues"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "opentype.js": "^1.3.4"
