@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { resolve } from 'path'
 import { createMeasurer } from '../../src/internal/measurer.js'
+import goldenValues from '../fixtures/golden-values.json'
 
 const REGULAR_PATH = resolve('test/fixtures/fonts/Inter-Regular.ttf')
 
@@ -13,15 +14,15 @@ describe('maxCachedFonts option', () => {
       maxCachedFonts: 50,
     })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.width).toBeGreaterThan(0)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
   })
 
-  it('should default to 100 when not specified', async () => {
+  it('should work with default cache size', async () => {
     const m = await createMeasurer({
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     // Just verify it works — internal cache size not observable
-    expect(m.measure('Test', { font: 'Inter', size: 16 }).width).toBeGreaterThan(0)
+    expect(m.measure('Test', { font: 'Inter', size: 16 }).width).toBeCloseTo(goldenValues['Inter-Regular-16-Test'], 1)
   })
 })
 
@@ -34,12 +35,12 @@ describe('getFontMetrics() — detailed', () => {
     })
     const metrics = m.getFontMetrics('Inter', 16)
     expect(metrics).not.toBeNull()
-    expect(metrics!.ascent).toBeGreaterThan(0)
-    expect(metrics!.descent).toBeGreaterThan(0)
+    expect(metrics!.ascent).toBeCloseTo(goldenValues['Inter-Regular-16-ascent'], 1)
+    expect(metrics!.descent).toBeCloseTo(goldenValues['Inter-Regular-16-descent'], 1)
     expect(metrics!.unitsPerEm).toBe(2048)
     expect(typeof metrics!.underlineOffset).toBe('number')
     expect(typeof metrics!.underlineThickness).toBe('number')
-    expect(metrics!.underlineThickness).toBeGreaterThan(0)
+    expect(metrics!.underlineThickness).toBeGreaterThan(0.1)
   })
 
   it('should scale with font size', async () => {
@@ -66,7 +67,9 @@ describe('estimateCharCount()', () => {
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const count = m.estimateCharCount({ font: 'Inter', size: 16, maxWidth: 200 })
-    expect(count).toBeGreaterThan(0)
+    // At 16px, Inter avg char width ~7-9px, so 200/8 ≈ 25 chars
+    expect(count).toBeGreaterThan(15)
+    expect(count).toBeLessThan(50)
   })
 
   it('should return more chars for wider containers', async () => {
