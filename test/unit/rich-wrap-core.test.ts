@@ -402,4 +402,18 @@ describe('per-line dynamic line height', () => {
     expect(result.lines[1]!.height).toBeCloseTo(28.8)
     expect(result.height).toBeCloseTo(57.6)
   })
+
+  it('lineHeightMultiplier: 0 produces 0-height lines (not fallback)', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Hello', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 14.4,
+      lineHeightMultiplier: 0,
+    })
+
+    // multiplier=0 → height=12*0=0, not fallback to 14.4
+    expect(result.lines[0]!.height).toBe(0)
+    expect(result.height).toBe(0)
+  })
 })
