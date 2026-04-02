@@ -219,7 +219,7 @@ See [benchmarks/PERFORMANCE.md](./benchmarks/PERFORMANCE.md) for detailed result
 | **Google Fonts** | No | No | Yes | No (bring your own fonts) |
 | **Multi-line** | Yes | Manual | Yes (via flexbox) | **Yes** |
 | **Network I/O** | N/A (browser) | N/A | Yes | **None** |
-| **Weight** | ~5KB | ~50MB (with Cairo) | ~2MB | **~2MB** |
+| **Weight** | ~5KB | ~50MB (with Cairo) | ~2MB | **~21KB** (+ ~3.7MB opentype.js) |
 | **Best for** | Browser perf | Full Canvas API | OG images | **AI layout, text metrics** |
 
 ## Use Cases
