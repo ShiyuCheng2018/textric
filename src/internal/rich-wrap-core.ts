@@ -1,5 +1,4 @@
 import { segmentize, type Segment } from './segment.js'
-import { resolveMaxLines } from './utils.js'
 import type {
   MeasureSpanWidthFn,
   GetSpanMetricsFn,
@@ -18,8 +17,7 @@ export function wrapRichText(
   getMetrics: GetSpanMetricsFn,
   options: WrapRichTextOptions,
 ): WrapRichTextResult {
-  const { lineHeight, maxLines, maxHeight } = options
-  const effectiveMaxLines = resolveMaxLines(lineHeight, maxLines, maxHeight)
+  const { lineHeightPx, lineHeightMultiplier, maxLines, maxHeight } = options
 
   const segments = segmentize(spans)
 
@@ -34,46 +32,45 @@ export function wrapRichText(
     }
   }
 
-  // Build all lines from segments
   const rawLines = buildLines(segments, maxWidth, measureWidth)
-
-  // Calculate total before truncation
   const totalLineCount = rawLines.length
 
-  // Apply truncation
-  const visibleCount = effectiveMaxLines !== undefined
-    ? Math.min(rawLines.length, effectiveMaxLines)
-    : rawLines.length
-  const truncated = visibleCount < totalLineCount
-
-  // Build final lines with metrics
   const lines: WrapRichLine[] = []
   let y = 0
 
-  for (let i = 0; i < visibleCount; i++) {
+  for (let i = 0; i < rawLines.length; i++) {
+    if (maxLines !== undefined && lines.length >= maxLines) break
+
     const raw = rawLines[i]!
     const fragments = mergeFragments(raw.fragments, measureWidth)
     const metrics = computeLineMetrics(fragments, spans, getMetrics)
+
+    const lineH = (lineHeightMultiplier !== undefined && metrics.maxFontSize > 0)
+      ? metrics.maxFontSize * lineHeightMultiplier
+      : lineHeightPx
+
+    // Epsilon tolerance for IEEE 754 precision (e.g. 24 * 1.2 = 28.800000000000004)
+    if (maxHeight !== undefined && y + lineH > maxHeight + 1e-9) break
 
     lines.push({
       fragments,
       width: computeLineWidth(fragments),
       ascent: metrics.ascent,
       descent: metrics.descent,
-      height: lineHeight,
+      height: lineH,
       y,
       baseline: y + metrics.ascent,
     })
 
-    y += lineHeight
+    y += lineH
   }
 
   return {
     lines,
-    lineCount: visibleCount,
+    lineCount: lines.length,
     totalLineCount,
-    truncated,
-    height: visibleCount * lineHeight,
+    truncated: lines.length < totalLineCount,
+    height: y,
     maxLineWidth: lines.reduce((max, l) => l.width > max ? l.width : max, 0),
   }
 }
@@ -261,15 +258,19 @@ function mergeFragments(
 // Line metrics
 // ---------------------------------------------------------------------------
 
+interface LineMetricsResult extends SpanMetrics {
+  maxFontSize: number
+}
+
 function computeLineMetrics(
   fragments: WrapFragment[],
   spans: WrapRichTextSpan[],
   getMetrics: GetSpanMetricsFn,
-): SpanMetrics {
+): LineMetricsResult {
   let maxAscent = 0
   let maxDescent = 0
+  let maxFontSize = 0
 
-  // Track which styles we've seen to avoid redundant calls
   const seen = new Set<number>()
 
   for (const frag of fragments) {
@@ -282,9 +283,10 @@ function computeLineMetrics(
     const metrics = getMetrics(span.style)
     if (metrics.ascent > maxAscent) maxAscent = metrics.ascent
     if (metrics.descent > maxDescent) maxDescent = metrics.descent
+    if (span.style.size > maxFontSize) maxFontSize = span.style.size
   }
 
-  return { ascent: maxAscent, descent: maxDescent }
+  return { ascent: maxAscent, descent: maxDescent, maxFontSize }
 }
 
 function computeLineWidth(fragments: WrapFragment[]): number {

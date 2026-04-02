@@ -71,7 +71,7 @@ node-canvas is the right choice when you need the full Canvas 2D API (drawing sh
 | **Input** | React JSX | Text string + font options |
 | **Output** | SVG markup | Layout data (width, height, lines, fragments) |
 | **Layout engine** | Yoga (full flexbox) | wrapText (text-only) |
-| **Weight** | ~2MB + Yoga WASM | ~2MB |
+| **Weight** | ~2MB + Yoga WASM | ~21KB (+ ~3.7MB opentype.js) |
 | **Google Fonts** | Yes | No (bring your own fonts) |
 | **Network I/O** | Yes | None |
 | **Best for** | Generating images | Computing text layout metrics |
@@ -85,7 +85,7 @@ Satori is a rendering engine. Textric is a layout library. If you need to render
 | **Startup** | ~2-5 seconds | ~10-50ms (font parse) |
 | **Memory** | ~100-300MB | ~10-50MB |
 | **Per measurement** | ~50-200ms | **< 0.1ms** |
-| **Dependency size** | ~400MB (Chromium) | ~2MB |
+| **Dependency size** | ~400MB (Chromium) | ~3.7MB |
 | **Edge Runtime** | Not supported | **Works** |
 | **Accuracy** | Perfect (real browser) | High (real font data + kerning) |
 

@@ -1,10 +1,47 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { resolve } from 'path'
 import { createMeasurer } from '../../src/internal/measurer.js'
 import { FontNotFoundError } from '../../src/internal/errors.js'
+import goldenValues from '../fixtures/golden-values.json'
 
 const REGULAR_PATH = resolve('test/fixtures/fonts/Inter-Regular.ttf')
 const BOLD_PATH = resolve('test/fixtures/fonts/Inter-Bold.ttf')
+
+describe('measure() — golden values (pinned)', () => {
+  let m: Awaited<ReturnType<typeof createMeasurer>>
+
+  beforeAll(async () => {
+    m = await createMeasurer({
+      fonts: [
+        { family: 'Inter', path: REGULAR_PATH, weight: 400 },
+        { family: 'Inter', path: BOLD_PATH, weight: 700 },
+      ],
+    })
+  })
+
+  it('should match pinned width for "Hello" at 16px', () => {
+    const result = m.measure('Hello', { font: 'Inter', size: 16 })
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
+  })
+
+  it('should match pinned width for "Hello World" at 16px', () => {
+    const result = m.measure('Hello World', { font: 'Inter', size: 16 })
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-HelloWorld'], 4)
+  })
+
+  it('should match pinned width for bold "Hello" at 16px', () => {
+    const result = m.measure('Hello', { font: 'Inter', size: 16, weight: 700 })
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Bold-16-Hello'], 4)
+  })
+
+  it('bold and regular produce different widths with pinned values', () => {
+    const regular = m.measure('Hello World', { font: 'Inter', size: 16 })
+    const bold = m.measure('Hello World', { font: 'Inter', size: 16, weight: 700 })
+    expect(regular.width).toBeCloseTo(goldenValues['Inter-Regular-16-HelloWorld'], 4)
+    expect(bold.width).toBeCloseTo(goldenValues['Inter-Bold-16-HelloWorld'], 4)
+    expect(regular.width).not.toBeCloseTo(bold.width, 0)
+  })
+})
 
 describe('createMeasurer', () => {
   it('should create a measurer with local font files', async () => {
@@ -47,7 +84,7 @@ describe('measure() — single line', () => {
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const result = m.measure('Hello World', { font: 'Inter', size: 16 })
-    expect(result.width).toBeGreaterThan(0)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-HelloWorld'], 4)
     expect(result.height).toBeCloseTo(16 * 1.2)
   })
 
@@ -102,6 +139,10 @@ describe('measure() — multi-line', () => {
     expect(result.lineCount).toBeGreaterThan(1)
     expect(result.lines.length).toBe(result.lineCount)
     expect(result.lineWidths.length).toBe(result.lineCount)
+    // Verify all lines respect maxWidth
+    for (const w of result.lineWidths) {
+      expect(w).toBeLessThanOrEqual(150)
+    }
   })
 
   it('should respect maxLines truncation', async () => {
@@ -145,7 +186,7 @@ describe('measure() — font not found', () => {
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const result = m.measure('Hello', { font: 'Inter', size: 16, weight: 700 })
-    expect(result.width).toBeGreaterThan(0)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
   })
 })
 
@@ -162,7 +203,7 @@ describe('loadFont()', () => {
     const m = await createMeasurer({})
     await m.loadFont({ family: 'Inter', weight: 400, path: REGULAR_PATH })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.width).toBeGreaterThan(0)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
   })
 })
 

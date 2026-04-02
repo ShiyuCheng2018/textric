@@ -71,6 +71,57 @@ interface WrapResult {
 3. Apply truncation (`maxLines` / `maxHeight`)
 4. Return visible lines + metrics
 
+---
+
+## `wrapRichText(spans, maxWidth, measureWidth, getMetrics, options)`
+
+Pure function for rich text wrapping. Same philosophy as `wrapText` — you bring your own measurement functions.
+
+```typescript
+import { wrapRichText } from 'textric/wrap'
+import type { MeasureSpanWidthFn, GetSpanMetricsFn } from 'textric/wrap'
+
+const measureSpanWidth: MeasureSpanWidthFn = (text, style) => {
+  return text.length * style.size * 0.5 // crude example
+}
+
+const getMetrics: GetSpanMetricsFn = (style) => ({
+  ascent: style.size * 0.8,
+  descent: style.size * 0.2,
+})
+
+const result = wrapRichText(
+  [
+    { text: 'Title\n', style: { font: 'Inter', size: 24, weight: 700, style: 'normal', letterSpacing: 0 } },
+    { text: 'Body text', style: { font: 'Inter', size: 12, weight: 400, style: 'normal', letterSpacing: 0 } },
+  ],
+  300,
+  measureSpanWidth,
+  getMetrics,
+  { lineHeightPx: 28.8, lineHeightMultiplier: 1.2 },
+)
+```
+
+### WrapRichTextOptions
+
+```typescript
+interface WrapRichTextOptions {
+  lineHeightPx: number            // Line height in PIXELS (fallback for empty lines when multiplier is set)
+  lineHeightMultiplier?: number   // Per-line dynamic height: each line's height = tallestFontSize * this
+  maxLines?: number               // Truncate after this many lines
+  maxHeight?: number              // Truncate when accumulated height exceeds this
+}
+```
+
+> **`lineHeightPx` vs `lineHeightMultiplier`:**
+> - **Without `lineHeightMultiplier`**: all lines use `lineHeightPx` as uniform height (v1 behavior).
+> - **With `lineHeightMultiplier`**: each line's height = `maxFontSizeOnThatLine * lineHeightMultiplier`. Empty lines (from `\n`) fall back to `lineHeightPx`.
+> - **Tip**: set `lineHeightPx` to `defaultFontSize * lineHeightMultiplier` for consistent empty-line sizing.
+
+> **Note:** The high-level `measureRichText()` always passes `lineHeightMultiplier` automatically. You only need to manage these options when using the low-level `wrapRichText()` directly.
+
+---
+
 ## Why export this separately?
 
 - **Testing**: test wrapping logic without loading real fonts

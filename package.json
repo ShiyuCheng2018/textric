@@ -1,6 +1,6 @@
 {
   "name": "textric",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "sideEffects": false,
   "description": "Text layout for AI. Line wrapping, rich text, and precise metrics — pure JS, no browser.",
   "type": "module",
@@ -30,6 +30,7 @@
     "bench": "vitest bench",
     "bench:report": "tsx benchmarks/generate-report.ts",
     "lint": "oxlint src",
+    "test:golden": "tsx test/helpers/generate-golden-values.ts | diff - test/fixtures/golden-values.json",
     "prepublishOnly": "pnpm build && pnpm test"
   },
   "keywords": [

@@ -56,7 +56,7 @@ const result = m.measure('Hello World', {
 | `weight` | `number` | `400` | Font weight (100-900) |
 | `style` | `string` | `'normal'` | `'normal'` or `'italic'` |
 | `letterSpacing` | `number` | `0` | Extra letter spacing in pixels |
-| `lineHeight` | `number` | `1.2` | Line height multiplier |
+| `lineHeight` | `number` | `1.2` | Line height **multiplier** (e.g. `1.5` means `fontSize * 1.5` px). Not pixels. |
 | `maxWidth` | `number` | — | Enable multi-line wrapping |
 | `maxLines` | `number` | — | Max visible lines (requires `maxWidth`) |
 | `maxHeight` | `number` | — | Max visible height in px (requires `maxWidth`) |
@@ -172,7 +172,7 @@ const result = m.fitText('Hello World, this is a headline', {
 | `weight` | `number` | `400` | Font weight (100-900) |
 | `style` | `string` | `'normal'` | `'normal'` or `'italic'` |
 | `letterSpacing` | `number` | `0` | Extra letter spacing in pixels |
-| `lineHeight` | `number` | `1.2` | Line height multiplier |
+| `lineHeight` | `number` | `1.2` | Line height **multiplier** (not pixels) |
 | `maxLines` | `number` | — | Max visible lines |
 | `minSize` | `number` | — | Minimum font size to try |
 | `maxSize` | `number` | — | Maximum font size to try |
@@ -203,9 +203,17 @@ const count = m.estimateCharCount({
   weight: 400,
 })
 // → 42 — approximately 42 characters fit in 300px at Inter 14px
+
+// For CJK text, pass a representative sample for better accuracy:
+const cjkCount = m.estimateCharCount({
+  font: 'Noto Sans CJK',
+  size: 14,
+  maxWidth: 300,
+  sampleText: '中',
+})
 ```
 
-### Options
+### Options (`EstimateCharCountOptions`)
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -214,6 +222,7 @@ const count = m.estimateCharCount({
 | `maxWidth` | `number` | **required** | Available width in pixels |
 | `weight` | `number` | `400` | Font weight (100-900) |
 | `style` | `string` | `'normal'` | `'normal'` or `'italic'` |
+| `sampleText` | `string` | `'A-Za-z0-9'` (62 chars) | Characters to sample for average width. Measured as a contiguous string (with kerning), then divided by character count. For CJK or other scripts, pass representative characters. |
 
 Returns a `number` — the estimated character count.
 

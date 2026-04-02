@@ -63,9 +63,17 @@ describe('fitText()', () => {
     const result = m.fitText('Hello World', {
       font: 'Inter', maxWidth: 200, maxHeight: 50,
     })
-    expect(result.size).toBeGreaterThan(0)
+    expect(result.size).toBeGreaterThan(5)
     expect(result.height).toBeLessThanOrEqual(50)
     expect(result.width).toBeLessThanOrEqual(200)
+
+    // Verify optimality: a slightly larger size should not fit
+    const nextUp = result.size + 1
+    const bigger = m.fitText('Hello World', {
+      font: 'Inter', maxWidth: 200, maxHeight: 50,
+      minSize: nextUp, maxSize: nextUp,
+    })
+    expect(bigger.height > 50 || bigger.width > 200).toBe(true)
   })
 
   it('should respect minSize', async () => {
@@ -96,8 +104,9 @@ describe('fitText()', () => {
       font: 'Inter', maxWidth: 100, maxHeight: 60,
     })
     expect(result.lines).toBeInstanceOf(Array)
-    expect(result.lineCount).toBeGreaterThan(0)
+    expect(result.lineCount).toBeGreaterThanOrEqual(1)
     expect(result.lines.length).toBe(result.lineCount)
+    expect(result.width).toBeLessThanOrEqual(100)
   })
 })
 

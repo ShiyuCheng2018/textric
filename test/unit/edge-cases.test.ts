@@ -33,10 +33,11 @@ describe('wrapText edge cases', () => {
   })
 
   it('should handle very long text (1000+ chars)', () => {
-    const longText = 'a '.repeat(500) // 1000 chars
+    const longText = 'a '.repeat(500) // 500 words of "a ", each "a " = 20px
     const result = wrapText(longText, 100, mw, { lineHeight: 20 })
-    expect(result.lineCount).toBeGreaterThan(1)
-    expect(result.height).toBeGreaterThan(0)
+    // maxWidth=100, "a " = 20px, 5 per line → 500/5 = 100 lines
+    expect(result.lineCount).toBe(100)
+    expect(result.height).toBe(100 * 20)
   })
 
   it('should handle tab characters as wrappable whitespace', () => {
@@ -57,14 +58,52 @@ describe('wrapText edge cases', () => {
     expect(result.lines).toEqual([])
   })
 
-  it('should handle emoji characters', () => {
+  it('should handle emoji characters with correct width', () => {
     const result = wrapText('Hello 👋 World', 200, mw, { lineHeight: 20 })
     expect(result.lineCount).toBe(1)
+    // Mock uses text.length (code units): 👋 = 2 code units, total = 14 * 10 = 140px
+    expect(result.maxLineWidth).toBe('Hello 👋 World'.length * 10)
+    expect(result.lines[0]).toBe('Hello 👋 World')
   })
 
-  it('should handle Unicode BOM', () => {
+  it('should handle Unicode BOM as a character', () => {
     const result = wrapText('\uFEFFHello', 200, mw, { lineHeight: 20 })
     expect(result.lineCount).toBe(1)
+    expect(result.lines[0]).toBe('\uFEFFHello')
+    expect(result.maxLineWidth).toBe([...'\uFEFFHello'].length * 10)
+  })
+})
+
+describe('known limitations — RTL and grapheme clusters', () => {
+  it('should measure RTL text by character sequence (no bidi reordering)', () => {
+    // Textric does NOT perform bidi reordering — it measures characters in input order.
+    // Arabic text is measured left-to-right as given. Users must do bidi reordering upstream.
+    const result = wrapText('مرحبا', 200, mw, { lineHeight: 20 })
+    expect(result.lineCount).toBe(1)
+    // Width = 5 chars * 10px (mock treats each code unit equally)
+    expect(result.maxLineWidth).toBe('مرحبا'.length * 10)
+  })
+
+  it('should treat multi-codepoint emoji as multiple characters', () => {
+    // Family emoji 👨‍👩‍👧‍👦 is 7 code units. Mock measures by code units, not graphemes.
+    // This documents current behavior — NOT ideal, but expected.
+    const family = '👨‍👩‍👧‍👦'
+    const result = wrapText(`A ${family} B`, 200, mw, { lineHeight: 20 })
+    expect(result.lineCount).toBe(1)
+    expect(result.maxLineWidth).toBe(`A ${family} B`.length * 10)
+  })
+
+  it('should treat combining characters as separate code units', () => {
+    // e + combining acute (é in NFD) = 2 code units
+    const nfd = 'e\u0301' // é in NFD form
+    const nfc = '\u00e9'   // é in NFC form
+    const resultNFD = wrapText(nfd, 200, mw, { lineHeight: 20 })
+    const resultNFC = wrapText(nfc, 200, mw, { lineHeight: 20 })
+    // NFD has 2 code units → 20px, NFC has 1 → 10px (mock behavior)
+    expect(resultNFD.maxLineWidth).toBe(nfd.length * 10)
+    expect(resultNFC.maxLineWidth).toBe(nfc.length * 10)
+    // These differ — documenting that Textric does not normalize Unicode forms
+    expect(resultNFD.maxLineWidth).not.toBe(resultNFC.maxLineWidth)
   })
 })
 
@@ -72,7 +111,7 @@ describe('wrapRichText edge cases', () => {
   it('should handle all-empty spans', () => {
     const result = wrapRichText(
       [{ text: '', style: styleA }, { text: '', style: styleA }],
-      100, spanMw, gm, { lineHeight: 20 },
+      100, spanMw, gm, { lineHeightPx: 20 },
     )
     expect(result.lineCount).toBe(0)
     expect(result.lines).toEqual([])
@@ -81,26 +120,34 @@ describe('wrapRichText edge cases', () => {
   it('should handle span with only spaces', () => {
     const result = wrapRichText(
       [{ text: '   ', style: styleA }],
-      100, spanMw, gm, { lineHeight: 20 },
+      100, spanMw, gm, { lineHeightPx: 20 },
     )
     // Spaces are a single space segment, after trim → empty fragments, but still 1 line
     expect(result.lineCount).toBe(1)
     expect(result.height).toBe(20)
   })
 
-  it('should handle many spans (100+)', () => {
+  it('should handle many spans (100+) with all text accounted for', () => {
     const spans = Array.from({ length: 100 }, (_, i) => ({
       text: `w${i} `,
       style: styleA,
     }))
-    const result = wrapRichText(spans, 200, spanMw, gm, { lineHeight: 20 })
+    const result = wrapRichText(spans, 200, spanMw, gm, { lineHeightPx: 20 })
     expect(result.lineCount).toBeGreaterThan(1)
+    // Verify all fragments have text from the original spans
+    for (const line of result.lines) {
+      for (const frag of line.fragments) {
+        expect(frag.spanIndex).toBeGreaterThanOrEqual(0)
+        expect(frag.spanIndex).toBeLessThan(100)
+        expect(frag.text.length).toBeGreaterThan(0)
+      }
+    }
   })
 
   it('should handle span with \\n at the very end', () => {
     const result = wrapRichText(
       [{ text: 'Hello\n', style: styleA }],
-      200, spanMw, gm, { lineHeight: 20 },
+      200, spanMw, gm, { lineHeightPx: 20 },
     )
     expect(result.lineCount).toBe(2)
   })
@@ -108,7 +155,7 @@ describe('wrapRichText edge cases', () => {
   it('should handle maxLines=0 for rich text', () => {
     const result = wrapRichText(
       [{ text: 'Hello', style: styleA }],
-      200, spanMw, gm, { lineHeight: 20, maxLines: 0 },
+      200, spanMw, gm, { lineHeightPx: 20, maxLines: 0 },
     )
     expect(result.lineCount).toBe(0)
     expect(result.truncated).toBe(true)

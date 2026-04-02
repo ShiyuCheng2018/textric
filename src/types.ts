@@ -222,6 +222,24 @@ export interface RichTextResult {
   truncated: boolean
 }
 
+// --- Estimate Char Count ---
+
+export interface EstimateCharCountOptions {
+  font: string
+  size: number
+  maxWidth: number
+  weight?: number
+  style?: 'normal' | 'italic'
+  /**
+   * Characters to sample for average width estimation.
+   * The sample is measured as a contiguous string (with kerning),
+   * then divided by character count.
+   * Default: A-Za-z0-9 (62 Latin letters + digits).
+   * For CJK or other scripts, pass representative characters (e.g. '中').
+   */
+  sampleText?: string
+}
+
 // --- Measurer Instance ---
 
 export interface Measurer {
@@ -238,7 +256,7 @@ export interface Measurer {
   loadFont(options: LoadFontOptions): Promise<void>
   getFontInfo(family: string): FontInfo | null
   getFontMetrics(font: string, size: number, weight?: number, style?: 'normal' | 'italic'): FontMetricsDetailed | null
-  estimateCharCount(options: { font: string; size: number; maxWidth: number; weight?: number; style?: 'normal' | 'italic' }): number
+  estimateCharCount(options: EstimateCharCountOptions): number
 }
 
 // --- Low-level Wrap Types ---
@@ -296,7 +314,19 @@ export interface WrapRichTextSpan {
 }
 
 export interface WrapRichTextOptions {
-  lineHeight: number
+  /**
+   * Line height in pixels.
+   * - Without `lineHeightMultiplier`: uniform height for all lines.
+   * - With `lineHeightMultiplier`: fallback height for empty lines only
+   *   (lines with spans use `maxFontSizeOnLine * lineHeightMultiplier`).
+   */
+  lineHeightPx: number
+  /**
+   * Per-line dynamic height multiplier. When set, each line's height equals
+   * the tallest font size on that line times this value.
+   * Empty lines (from `\n`) fall back to `lineHeightPx`.
+   */
+  lineHeightMultiplier?: number
   maxLines?: number
   maxHeight?: number
 }

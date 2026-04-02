@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { resolve } from 'path'
 import { createMeasurer } from '../../src/internal/measurer.js'
+import goldenValues from '../fixtures/golden-values.json'
 // FontNotFoundError tests moved to pure-core.test.ts
 
 const REGULAR_PATH = resolve('test/fixtures/fonts/Inter-Regular.ttf')
@@ -16,8 +17,9 @@ describe('shrinkWrap() — complete result', () => {
     const result = m.shrinkWrap('Hello World Test', {
       font: 'Inter', size: 16, maxLines: 2,
     })
-    expect(result.width).toBeGreaterThan(0)
-    expect(result.height).toBeGreaterThan(0)
+    // Width must be at least one word wide ("Hello" ≈ 38px at 16px Inter)
+    expect(result.width).toBeGreaterThan(30)
+    expect(result.height).toBeCloseTo(16 * 1.2 * result.lineCount, 1)
     expect(result.lines).toBeInstanceOf(Array)
     expect(result.lines.length).toBe(result.lineCount)
     expect(result.lineCount).toBeLessThanOrEqual(2)
@@ -33,7 +35,7 @@ describe('shrinkWrap() — complete result', () => {
     const verify = m.measure('Some text to wrap', {
       font: 'Inter', size: 14, maxWidth: shrunk.width, lineHeight: 1.5,
     })
-    expect(shrunk.height).toBeCloseTo(verify.height, 1)
+    expect(shrunk.height).toBeCloseTo(verify.height, 2)
   })
 })
 
@@ -45,8 +47,8 @@ describe('measure() — baseline info', () => {
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.ascent).toBeGreaterThan(0)
-    expect(result.descent).toBeGreaterThan(0)
+    expect(result.ascent).toBeCloseTo(goldenValues['Inter-Regular-16-ascent'], 4)
+    expect(result.descent).toBeCloseTo(goldenValues['Inter-Regular-16-descent'], 4)
     expect(result.ascent + result.descent).toBeLessThanOrEqual(result.height * 1.5)
   })
 
