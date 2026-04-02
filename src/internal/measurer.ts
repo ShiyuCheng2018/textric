@@ -385,15 +385,21 @@ export async function createMeasurer(
   }
 
   // --- estimateCharCount ---
-  function estimateCharCountImpl(opts: {
-    font: string; size: number; maxWidth: number;
-    weight?: number; style?: 'normal' | 'italic'
-  }): number {
+  const DEFAULT_SAMPLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
+  function estimateCharCountImpl(opts: import('../types.js').EstimateCharCountOptions): number {
     const weight = opts.weight ?? 400
     const style = opts.style ?? 'normal'
     const resolved = registry.resolveWithFallback(opts.font, weight, style)
     if (!resolved) return Math.floor(opts.maxWidth / (opts.size * 0.5))
-    const avgWidth = resolved.font.getAdvanceWidth('x', opts.size)
+
+    const sample = (opts.sampleText && opts.sampleText.length > 0)
+      ? opts.sampleText
+      : DEFAULT_SAMPLE
+    const charCount = [...sample].length
+    const totalWidth = resolved.font.getAdvanceWidth(sample, opts.size)
+    const avgWidth = totalWidth / charCount
+
     if (avgWidth <= 0) return 0
     return Math.floor(opts.maxWidth / avgWidth)
   }
