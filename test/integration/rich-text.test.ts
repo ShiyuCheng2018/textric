@@ -161,3 +161,25 @@ describe('measureRichText() — empty input', () => {
     expect(result.height).toBe(0)
   })
 })
+
+describe('measureRichText() — per-line dynamic heights', () => {
+  it('mixed font sizes produce per-line dynamic heights', async () => {
+    const m = await createMeasurer({
+      fonts: [
+        { family: 'Inter', path: REGULAR_PATH, weight: 400 },
+        { family: 'Inter', path: BOLD_PATH, weight: 700 },
+      ],
+    })
+
+    const result = m.measureRichText([
+      { text: 'Title\n', font: 'Inter', size: 24, weight: 700 },
+      { text: 'Body text here', font: 'Inter', size: 12 },
+    ], { maxWidth: 400, lineHeight: 1.2 })
+
+    // Line 0 (24px) should be taller than line 1 (12px)
+    expect(result.lines[0]!.height).toBeGreaterThan(result.lines[1]!.height)
+
+    // Total height should be less than uniform approach (2 * 24 * 1.2 = 57.6)
+    expect(result.height).toBeLessThan(2 * 24 * 1.2)
+  })
+})
