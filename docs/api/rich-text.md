@@ -57,7 +57,7 @@ interface RichTextSpan {
 ```typescript
 interface RichTextOptions {
   maxWidth?: number    // Maximum line width in pixels. Enables multi-line wrapping.
-  lineHeight?: number  // Line height multiplier (e.g. 1.4). Default: 1.2
+  lineHeight?: number  // Line height **multiplier** (e.g. 1.4 = fontSize * 1.4 px). NOT pixels. Default: 1.2
   maxLines?: number    // Maximum number of visible lines. Only effective when maxWidth is set.
   maxHeight?: number   // Maximum visible height in pixels. Only effective when maxWidth is set.
 }
@@ -93,6 +93,8 @@ interface RichTextLine {
   baseline: number                   // Y offset of the baseline from the top of the text block
 }
 ```
+
+> **v2.0 change:** `height` is now **per-line dynamic** — each line's height is based on the tallest font size on that line, not the global max font size. A 24px title line and a 12px body line will have different heights. In v1, all lines shared the same height based on the largest font across all spans.
 
 ### RichTextLineFragment
 
