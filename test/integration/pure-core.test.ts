@@ -24,7 +24,7 @@ describe('createMeasurer — font sources', () => {
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
   })
 
   it('should load font from ArrayBuffer data', async () => {
@@ -32,7 +32,7 @@ describe('createMeasurer — font sources', () => {
       fonts: [{ family: 'Inter', data: FONT_ARRAY_BUFFER, weight: 400 }],
     })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
   })
 
   it('should load multiple font variants', async () => {
@@ -70,7 +70,7 @@ describe('font resolution — strict by default', () => {
     })
     // Request 700, only 400 loaded — same family fallback is OK
     const result = m.measure('Hello', { font: 'Inter', size: 16, weight: 700 })
-    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
     expect(result.resolvedFont.weight).toBe(400)
   })
 
@@ -88,14 +88,14 @@ describe('loadFont — path and data only', () => {
     const m = await createMeasurer({ fonts: [] })
     await m.loadFont({ family: 'Inter', weight: 400, path: REGULAR_PATH })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
   })
 
   it('should load font from data at runtime', async () => {
     const m = await createMeasurer({ fonts: [] })
     await m.loadFont({ family: 'Inter', weight: 400, data: FONT_ARRAY_BUFFER })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
+    expect(result.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
   })
 
   it('should throw when no path or data provided', async () => {
@@ -183,6 +183,6 @@ describe('createMeasurer options — minimal', () => {
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
       maxCachedFonts: 50,
     })
-    expect(m.measure('Hi', { font: 'Inter', size: 16 }).width).toBeCloseTo(goldenValues['Inter-Regular-16-Hi'], 1)
+    expect(m.measure('Hi', { font: 'Inter', size: 16 }).width).toBeCloseTo(goldenValues['Inter-Regular-16-Hi'], 4)
   })
 })

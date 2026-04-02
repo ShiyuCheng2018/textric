@@ -18,9 +18,9 @@ describe('measureBatch()', () => {
     ])
 
     expect(results).toHaveLength(3)
-    expect(results[0]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
-    expect(results[1]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-World'], 1)
-    expect(results[2]!.width).toBeCloseTo(goldenValues['Inter-Regular-24-Textric'], 1)
+    expect(results[0]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 4)
+    expect(results[1]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-World'], 4)
+    expect(results[2]!.width).toBeCloseTo(goldenValues['Inter-Regular-24-Textric'], 4)
   })
 
   it('should return results matching individual measure() calls', async () => {
@@ -66,7 +66,7 @@ describe('measureBatch()', () => {
     // Second item should have multi-line fields
     const multiline = results[1]!
     expect('lineCount' in multiline).toBe(true)
-    const ml = multiline as any
+    const ml = multiline as import('../../src/types.js').MultiLineMeasureResult
     expect(ml.lineCount).toBeGreaterThan(1)
     for (const w of ml.lineWidths) {
       expect(w).toBeLessThanOrEqual(80)

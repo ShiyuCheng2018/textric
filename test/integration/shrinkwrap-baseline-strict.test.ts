@@ -17,7 +17,8 @@ describe('shrinkWrap() — complete result', () => {
     const result = m.shrinkWrap('Hello World Test', {
       font: 'Inter', size: 16, maxLines: 2,
     })
-    expect(result.width).toBeGreaterThan(10)
+    // Width must be at least one word wide ("Hello" ≈ 38px at 16px Inter)
+    expect(result.width).toBeGreaterThan(30)
     expect(result.height).toBeCloseTo(16 * 1.2 * result.lineCount, 1)
     expect(result.lines).toBeInstanceOf(Array)
     expect(result.lines.length).toBe(result.lineCount)
@@ -46,8 +47,8 @@ describe('measure() — baseline info', () => {
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const result = m.measure('Hello', { font: 'Inter', size: 16 })
-    expect(result.ascent).toBeCloseTo(goldenValues['Inter-Regular-16-ascent'], 1)
-    expect(result.descent).toBeCloseTo(goldenValues['Inter-Regular-16-descent'], 1)
+    expect(result.ascent).toBeCloseTo(goldenValues['Inter-Regular-16-ascent'], 4)
+    expect(result.descent).toBeCloseTo(goldenValues['Inter-Regular-16-descent'], 4)
     expect(result.ascent + result.descent).toBeLessThanOrEqual(result.height * 1.5)
   })
 

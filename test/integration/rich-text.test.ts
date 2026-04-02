@@ -72,7 +72,7 @@ describe('measureRichText() — multi-span', () => {
 
     const frags = result.lines[0]!.fragments
     expect(frags[0]!.x).toBe(0)
-    expect(frags[0]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-AB'], 1)
+    expect(frags[0]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-AB'], 4)
     expect(frags[1]!.x).toBeCloseTo(frags[0]!.width, 5)
   })
 
@@ -119,7 +119,7 @@ describe('measureRichText() — wrapping', () => {
     expect(result.lineCount).toBeGreaterThan(1)
     expect(result.truncated).toBe(false)
     for (const line of result.lines) {
-      expect(line.width).toBeLessThanOrEqual(150.01)
+      expect(line.width).toBeLessThanOrEqual(150)
     }
   })
 
@@ -212,9 +212,9 @@ describe('measureRichText() — README examples', () => {
     expect(frags).toHaveLength(3)
 
     // Fragment widths match golden values
-    expect(frags[0]!.width).toBeCloseTo(goldenValues['Inter-Regular-14-$'], 1)
-    expect(frags[1]!.width).toBeCloseTo(goldenValues['Inter-Bold-32-49'], 1)
-    expect(frags[2]!.width).toBeCloseTo(goldenValues['Inter-Regular-14-.99'], 1)
+    expect(frags[0]!.width).toBeCloseTo(goldenValues['Inter-Regular-14-$'], 4)
+    expect(frags[1]!.width).toBeCloseTo(goldenValues['Inter-Bold-32-49'], 4)
+    expect(frags[2]!.width).toBeCloseTo(goldenValues['Inter-Regular-14-.99'], 4)
 
     // x positions accumulate
     expect(frags[0]!.x).toBe(0)
