@@ -237,3 +237,169 @@ describe('wrapRichText', () => {
     })
   })
 })
+
+describe('per-line dynamic line height', () => {
+  const mw2: MeasureSpanWidthFn = (text: string, _style: SpanStyle) => text.length * 10
+  const gm2: GetSpanMetricsFn = (style: SpanStyle) => ({
+    ascent: style.size * 0.8,
+    descent: style.size * 0.2,
+  })
+
+  const bigStyle: SpanStyle = { font: 'Inter', size: 24, weight: 700, style: 'normal', letterSpacing: 0 }
+  const smallStyle: SpanStyle = { font: 'Inter', size: 12, weight: 400, style: 'normal', letterSpacing: 0 }
+
+  it('lines with different font sizes get different heights', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Title\n', style: bigStyle },
+      { text: 'body text', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 100, mw2, gm2, {
+      lineHeightPx: 28.8,
+      lineHeightMultiplier: 1.2,
+    })
+
+    expect(result.lines[0]!.height).toBeCloseTo(28.8)
+    expect(result.lines[1]!.height).toBeCloseTo(14.4)
+    expect(result.height).toBeCloseTo(43.2)
+  })
+
+  it('y positions accumulate per-line heights', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Big\n', style: bigStyle },
+      { text: 'Small\n', style: smallStyle },
+      { text: 'Big', style: bigStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 28.8,
+      lineHeightMultiplier: 1.2,
+    })
+
+    expect(result.lines[0]!.y).toBeCloseTo(0)
+    expect(result.lines[1]!.y).toBeCloseTo(28.8)
+    expect(result.lines[2]!.y).toBeCloseTo(28.8 + 14.4)
+  })
+
+  it('single line with mixed sizes uses max font size', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Big', style: bigStyle },
+      { text: 'Small', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 28.8,
+      lineHeightMultiplier: 1.2,
+    })
+
+    expect(result.lineCount).toBe(1)
+    expect(result.lines[0]!.height).toBeCloseTo(28.8)
+  })
+
+  it('uniform font sizes produce same result as without multiplier', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Hello World Test', style: smallStyle },
+    ]
+
+    const withMultiplier = wrapRichText(spans, 80, mw2, gm2, {
+      lineHeightPx: 14.4,
+      lineHeightMultiplier: 1.2,
+    })
+
+    const without = wrapRichText(spans, 80, mw2, gm2, {
+      lineHeightPx: 14.4,
+    })
+
+    expect(withMultiplier.height).toBeCloseTo(without.height)
+    expect(withMultiplier.lineCount).toBe(without.lineCount)
+  })
+
+  it('maxHeight truncation works with varying line heights', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Title\n', style: bigStyle },
+      { text: 'body', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 28.8,
+      lineHeightMultiplier: 1.2,
+      maxHeight: 35,
+    })
+
+    expect(result.lineCount).toBe(1)
+    expect(result.truncated).toBe(true)
+    expect(result.height).toBeCloseTo(28.8)
+  })
+
+  it('maxHeight smaller than first line returns 0 lines', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Title\nbody', style: bigStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 28.8,
+      lineHeightMultiplier: 1.2,
+      maxHeight: 10,
+    })
+
+    expect(result.lineCount).toBe(0)
+    expect(result.truncated).toBe(true)
+    expect(result.height).toBe(0)
+  })
+
+  it('maxLines with lineHeightMultiplier limits to exact count', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Big\n', style: bigStyle },
+      { text: 'Small\n', style: smallStyle },
+      { text: 'More', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 28.8,
+      lineHeightMultiplier: 1.2,
+      maxLines: 2,
+    })
+
+    expect(result.lineCount).toBe(2)
+    expect(result.truncated).toBe(true)
+    expect(result.height).toBeCloseTo(43.2)
+  })
+
+  it('maxLines + maxHeight: stricter constraint wins', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Big\n', style: bigStyle },
+      { text: 'Small\n', style: smallStyle },
+      { text: 'More', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 28.8,
+      lineHeightMultiplier: 1.2,
+      maxLines: 3,
+      maxHeight: 35,
+    })
+
+    expect(result.lineCount).toBe(1)
+    expect(result.truncated).toBe(true)
+  })
+
+  it('empty lines from newlines use fallback lineHeightPx', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'A\n\nB', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 14.4,
+      lineHeightMultiplier: 1.2,
+    })
+
+    expect(result.lines[1]!.height).toBeCloseTo(14.4)
+    expect(result.height).toBeCloseTo(43.2)
+  })
+
+  it('without lineHeightMultiplier, all lines use uniform lineHeightPx', () => {
+    const spans: WrapRichTextSpan[] = [
+      { text: 'Title\n', style: bigStyle },
+      { text: 'body', style: smallStyle },
+    ]
+    const result = wrapRichText(spans, 200, mw2, gm2, {
+      lineHeightPx: 28.8,
+    })
+
+    expect(result.lines[0]!.height).toBeCloseTo(28.8)
+    expect(result.lines[1]!.height).toBeCloseTo(28.8)
+    expect(result.height).toBeCloseTo(57.6)
+  })
+})
