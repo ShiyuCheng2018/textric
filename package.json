@@ -1,6 +1,6 @@
 {
   "name": "textric",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "sideEffects": false,
   "description": "Text layout for AI. Line wrapping, rich text, and precise metrics — pure JS, no browser.",
   "type": "module",

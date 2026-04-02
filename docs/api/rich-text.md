@@ -88,7 +88,7 @@ interface RichTextLine {
   width: number                      // Total width of this line
   ascent: number                     // Maximum ascent across all fragments
   descent: number                    // Maximum descent across all fragments
-  height: number                     // Line height in pixels (ascent + descent, scaled by lineHeight)
+  height: number                     // Per-line height in pixels (tallest span's fontSize * lineHeight multiplier)
   y: number                          // Y offset from the top of the text block
   baseline: number                   // Y offset of the baseline from the top of the text block
 }

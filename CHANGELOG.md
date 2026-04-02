@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.0.0] - 2026-04-02
+
+### Breaking Changes
+
+- **`measureRichText()` now uses per-line dynamic line heights.** Each line's height is based on the tallest span on that line, not the global max font size. Mixed-size layouts will return different `height`, `lines[i].height`, and `lines[i].y` values compared to v1.
+- **`WrapRichTextOptions.lineHeight` renamed to `lineHeightPx`** for clarity. Affects direct consumers of `textric/wrap`.
+- **`estimateCharCount()` uses a 62-character sample** (A-Za-z0-9) instead of single 'x'. Returns more accurate but different values.
+
+### Features
+
+- Per-line dynamic line height for rich text — a 24px title + 12px body now produces tighter layout instead of all lines using 24px-based height
+- `estimateCharCount()` accepts optional `sampleText` parameter for domain-specific estimation (e.g. pass CJK characters for CJK text)
+- `WrapRichTextOptions.lineHeightMultiplier` option for low-level `textric/wrap` users
+- New `EstimateCharCountOptions` named interface for better IDE discoverability
+
+### Migration Guide
+
+**If you use `measureRichText()` with mixed font sizes:**
+Your `result.height` will decrease (each line is now sized to its tallest span, not the global tallest). `lines[i].y` values shift accordingly. If your renderer hardcodes y-offsets from v1 output, re-derive them from the new `lines[i].y` values. If all your spans use the same `size`, output is identical to v1.
+
+**If you import from `textric/wrap`:**
+Rename `lineHeight` to `lineHeightPx` in your `WrapRichTextOptions`. TypeScript will flag this at compile time.
+
+**If you use `estimateCharCount()`:**
+Return values change (more accurate). No API change needed unless you pinned exact values in snapshots.
+
 ## [1.0.0] - 2026-03-31
 
 ### Core
