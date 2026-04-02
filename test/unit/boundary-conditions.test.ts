@@ -37,28 +37,31 @@ describe('ellipsis — edge cases', () => {
 // --- fitText edge cases ---
 
 describe('fitText — edge cases', () => {
-  it('should clamp when minSize > maxSize', async () => {
+  it('should clamp when minSize > maxSize and produce valid layout', async () => {
     const m = await createMeasurer({
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const result = m.fitText('Hello World', {
       font: 'Inter', maxWidth: 200, maxHeight: 50,
-      minSize: 48, maxSize: 12,
+      minSize: 48, maxSize: 12, // inverted — lib swaps them internally
     })
-    // Should not return size > 48 or produce invalid result
+    // Effective range is 12-48. Result must fit constraints.
     expect(result.size).toBeLessThanOrEqual(48)
     expect(result.size).toBeGreaterThanOrEqual(12)
+    expect(result.height).toBeLessThanOrEqual(50)
+    expect(result.width).toBeLessThanOrEqual(200)
   })
 
-  it('should handle empty text', async () => {
+  it('should handle empty text by returning maxSize', async () => {
     const m = await createMeasurer({
       fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
     })
     const result = m.fitText('', {
-      font: 'Inter', maxWidth: 200, maxHeight: 50,
+      font: 'Inter', maxWidth: 200, maxHeight: 100, maxSize: 72,
     })
-    expect(result.size).toBeGreaterThan(0)
-    expect(result.lineCount).toBeGreaterThanOrEqual(1)
+    // Empty text always fits → should return maxSize (or close, due to 0.5 rounding)
+    expect(result.size).toBeGreaterThanOrEqual(71)
+    expect(result.lineCount).toBe(1)
   })
 })
 
@@ -75,6 +78,9 @@ describe('paragraphSpacing + maxHeight', () => {
     })
     expect(result.height).toBeLessThanOrEqual(80)
     expect(result.truncated).toBe(true)
+    // Must truncate to fewer than 4 lines
+    expect(result.lineCount).toBeLessThan(4)
+    expect(result.lineCount).toBeGreaterThanOrEqual(1)
   })
 
   it('should compute correct height with truncation + paragraphSpacing', () => {
@@ -107,6 +113,8 @@ describe('kinsoku — consecutive prohibited chars', () => {
   it('should not place consecutive closing marks at line start', () => {
     // "你好！！测试" maxWidth=30 (3 chars)
     const result = wrapText('你好！！测试', 30, mw, { lineHeight: 20 })
+    expect(result.lines).toEqual(['你', '好！！', '测试'])
+    // Verify no line starts with prohibited character
     for (let i = 1; i < result.lines.length; i++) {
       const first = result.lines[i]![0]!
       expect('。，、；：？！）】」』》〉'.includes(first)).toBe(false)
