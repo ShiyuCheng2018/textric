@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { resolve } from 'path'
 import { createMeasurer } from '../../src/internal/measurer.js'
+import goldenValues from '../fixtures/golden-values.json'
 
 const REGULAR_PATH = resolve('test/fixtures/fonts/Inter-Regular.ttf')
 
@@ -17,9 +18,9 @@ describe('measureBatch()', () => {
     ])
 
     expect(results).toHaveLength(3)
-    for (const r of results) {
-      expect(r.width).toBeGreaterThan(0)
-    }
+    expect(results[0]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-Hello'], 1)
+    expect(results[1]!.width).toBeCloseTo(goldenValues['Inter-Regular-16-World'], 1)
+    expect(results[2]!.width).toBeCloseTo(goldenValues['Inter-Regular-24-Textric'], 1)
   })
 
   it('should return results matching individual measure() calls', async () => {
@@ -64,8 +65,11 @@ describe('measureBatch()', () => {
     expect(results).toHaveLength(2)
     // Second item should have multi-line fields
     const multiline = results[1]!
-    if ('lineCount' in multiline) {
-      expect(multiline.lineCount).toBeGreaterThan(1)
+    expect('lineCount' in multiline).toBe(true)
+    const ml = multiline as any
+    expect(ml.lineCount).toBeGreaterThan(1)
+    for (const w of ml.lineWidths) {
+      expect(w).toBeLessThanOrEqual(80)
     }
   })
 })
