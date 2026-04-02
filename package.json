@@ -30,6 +30,7 @@
     "bench": "vitest bench",
     "bench:report": "tsx benchmarks/generate-report.ts",
     "lint": "oxlint src",
+    "test:golden": "tsx test/helpers/generate-golden-values.ts | diff - test/fixtures/golden-values.json",
     "prepublishOnly": "pnpm build && pnpm test"
   },
   "keywords": [

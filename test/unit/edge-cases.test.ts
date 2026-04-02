@@ -74,6 +74,39 @@ describe('wrapText edge cases', () => {
   })
 })
 
+describe('known limitations — RTL and grapheme clusters', () => {
+  it('should measure RTL text by character sequence (no bidi reordering)', () => {
+    // Textric does NOT perform bidi reordering — it measures characters in input order.
+    // Arabic text is measured left-to-right as given. Users must do bidi reordering upstream.
+    const result = wrapText('مرحبا', 200, mw, { lineHeight: 20 })
+    expect(result.lineCount).toBe(1)
+    // Width = 5 chars * 10px (mock treats each code unit equally)
+    expect(result.maxLineWidth).toBe('مرحبا'.length * 10)
+  })
+
+  it('should treat multi-codepoint emoji as multiple characters', () => {
+    // Family emoji 👨‍👩‍👧‍👦 is 7 code units. Mock measures by code units, not graphemes.
+    // This documents current behavior — NOT ideal, but expected.
+    const family = '👨‍👩‍👧‍👦'
+    const result = wrapText(`A ${family} B`, 200, mw, { lineHeight: 20 })
+    expect(result.lineCount).toBe(1)
+    expect(result.maxLineWidth).toBe(`A ${family} B`.length * 10)
+  })
+
+  it('should treat combining characters as separate code units', () => {
+    // e + combining acute (é in NFD) = 2 code units
+    const nfd = 'e\u0301' // é in NFD form
+    const nfc = '\u00e9'   // é in NFC form
+    const resultNFD = wrapText(nfd, 200, mw, { lineHeight: 20 })
+    const resultNFC = wrapText(nfc, 200, mw, { lineHeight: 20 })
+    // NFD has 2 code units → 20px, NFC has 1 → 10px (mock behavior)
+    expect(resultNFD.maxLineWidth).toBe(nfd.length * 10)
+    expect(resultNFC.maxLineWidth).toBe(nfc.length * 10)
+    // These differ — documenting that Textric does not normalize Unicode forms
+    expect(resultNFD.maxLineWidth).not.toBe(resultNFC.maxLineWidth)
+  })
+})
+
 describe('wrapRichText edge cases', () => {
   it('should handle all-empty spans', () => {
     const result = wrapRichText(

@@ -231,4 +231,46 @@ describe('wrapText', () => {
       }
     }
   })
+
+  describe('proportional width mock', () => {
+    // Non-uniform mock: different widths per character class
+    const proportionalMw: MeasureWidthFn = (text: string) => {
+      let w = 0
+      for (const ch of text) {
+        if (ch === ' ') w += 4
+        else if (ch >= 'A' && ch <= 'Z') w += 12
+        else if (ch >= 'a' && ch <= 'z') w += 8
+        else if (ch >= '0' && ch <= '9') w += 9
+        else w += 10 // CJK, punctuation, etc
+      }
+      return w
+    }
+
+    it('should wrap at word boundary with variable-width characters', () => {
+      // "Hello World" = H(12)+e(8)+l(8)+l(8)+o(8) + space(4) + W(12)+o(8)+r(8)+l(8)+d(8) = 92
+      // "Hello" = 44, " " = 4, "World" = 44
+      const result = wrapText('Hello World', 50, proportionalMw, { lineHeight: 20 })
+      expect(result.lineCount).toBe(2)
+      expect(result.lines[0]).toBe('Hello')
+      expect(result.lines[1]).toBe('World')
+    })
+
+    it('should handle narrow vs wide characters differently', () => {
+      // "iii" = 24px, "WWW" = 36px — same char count, different widths
+      const result = wrapText('iii WWW', 30, proportionalMw, { lineHeight: 20 })
+      // "iii" (24px) fits in 30, "WWW" (36px) doesn't fit but charBreaks
+      expect(result.lineCount).toBeGreaterThanOrEqual(2)
+      expect(result.lines[0]).toBe('iii')
+    })
+
+    it('should respect maxWidth invariant with proportional widths', () => {
+      const text = 'The Quick Brown Fox Jumps Over The Lazy Dog'
+      const result = wrapText(text, 100, proportionalMw, { lineHeight: 20 })
+      for (let i = 0; i < result.lines.length; i++) {
+        if (result.lines[i]!.length > 1) {
+          expect(proportionalMw(result.lines[i]!)).toBeLessThanOrEqual(100)
+        }
+      }
+    })
+  })
 })
