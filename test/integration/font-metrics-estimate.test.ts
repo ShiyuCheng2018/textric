@@ -92,4 +92,25 @@ describe('estimateCharCount()', () => {
     const count = m.estimateCharCount({ font: 'Unknown', size: 16, maxWidth: 200 })
     expect(count).toBeGreaterThan(0)
   })
+
+  it('accepts custom sampleText for domain-specific estimation', async () => {
+    const m = await createMeasurer({
+      fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
+    })
+    const latin = m.estimateCharCount({ font: 'Inter', size: 16, maxWidth: 500 })
+    const narrow = m.estimateCharCount({ font: 'Inter', size: 16, maxWidth: 500, sampleText: 'iiiiiiiiii' })
+    const wide = m.estimateCharCount({ font: 'Inter', size: 16, maxWidth: 500, sampleText: 'WWWWWWWWWW' })
+
+    expect(narrow).toBeGreaterThan(latin)
+    expect(wide).toBeLessThan(latin)
+  })
+
+  it('empty sampleText falls back to default sample', async () => {
+    const m = await createMeasurer({
+      fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
+    })
+    const withDefault = m.estimateCharCount({ font: 'Inter', size: 16, maxWidth: 500 })
+    const withEmpty = m.estimateCharCount({ font: 'Inter', size: 16, maxWidth: 500, sampleText: '' })
+    expect(withEmpty).toBe(withDefault)
+  })
 })
