@@ -45,7 +45,7 @@ export function wrapRichText(
     const fragments = mergeFragments(raw.fragments, measureWidth)
     const metrics = computeLineMetrics(fragments, spans, getMetrics)
 
-    const lineH = (lineHeightMultiplier && metrics.maxFontSize > 0)
+    const lineH = (lineHeightMultiplier !== undefined && metrics.maxFontSize > 0)
       ? metrics.maxFontSize * lineHeightMultiplier
       : lineHeightPx
 

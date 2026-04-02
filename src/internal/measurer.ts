@@ -28,6 +28,7 @@ import type {
   GetSpanMetricsFn,
   SpanStyle,
   WrapRichTextSpan,
+  EstimateCharCountOptions,
 } from '../types.js'
 
 /**
@@ -387,7 +388,7 @@ export async function createMeasurer(
   // --- estimateCharCount ---
   const DEFAULT_SAMPLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
-  function estimateCharCountImpl(opts: import('../types.js').EstimateCharCountOptions): number {
+  function estimateCharCountImpl(opts: EstimateCharCountOptions): number {
     const weight = opts.weight ?? 400
     const style = opts.style ?? 'normal'
     const resolved = registry.resolveWithFallback(opts.font, weight, style)

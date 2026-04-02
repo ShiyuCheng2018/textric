@@ -34,4 +34,7 @@ export type {
   RichTextResult,
   RichTextLine,
   RichTextLineFragment,
+
+  // Estimate
+  EstimateCharCountOptions,
 } from './types.js'
