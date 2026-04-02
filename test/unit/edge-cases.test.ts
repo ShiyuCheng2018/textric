@@ -72,7 +72,7 @@ describe('wrapRichText edge cases', () => {
   it('should handle all-empty spans', () => {
     const result = wrapRichText(
       [{ text: '', style: styleA }, { text: '', style: styleA }],
-      100, spanMw, gm, { lineHeight: 20 },
+      100, spanMw, gm, { lineHeightPx: 20 },
     )
     expect(result.lineCount).toBe(0)
     expect(result.lines).toEqual([])
@@ -81,7 +81,7 @@ describe('wrapRichText edge cases', () => {
   it('should handle span with only spaces', () => {
     const result = wrapRichText(
       [{ text: '   ', style: styleA }],
-      100, spanMw, gm, { lineHeight: 20 },
+      100, spanMw, gm, { lineHeightPx: 20 },
     )
     // Spaces are a single space segment, after trim → empty fragments, but still 1 line
     expect(result.lineCount).toBe(1)
@@ -93,14 +93,14 @@ describe('wrapRichText edge cases', () => {
       text: `w${i} `,
       style: styleA,
     }))
-    const result = wrapRichText(spans, 200, spanMw, gm, { lineHeight: 20 })
+    const result = wrapRichText(spans, 200, spanMw, gm, { lineHeightPx: 20 })
     expect(result.lineCount).toBeGreaterThan(1)
   })
 
   it('should handle span with \\n at the very end', () => {
     const result = wrapRichText(
       [{ text: 'Hello\n', style: styleA }],
-      200, spanMw, gm, { lineHeight: 20 },
+      200, spanMw, gm, { lineHeightPx: 20 },
     )
     expect(result.lineCount).toBe(2)
   })
@@ -108,7 +108,7 @@ describe('wrapRichText edge cases', () => {
   it('should handle maxLines=0 for rich text', () => {
     const result = wrapRichText(
       [{ text: 'Hello', style: styleA }],
-      200, spanMw, gm, { lineHeight: 20, maxLines: 0 },
+      200, spanMw, gm, { lineHeightPx: 20, maxLines: 0 },
     )
     expect(result.lineCount).toBe(0)
     expect(result.truncated).toBe(true)

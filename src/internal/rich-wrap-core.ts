@@ -18,7 +18,7 @@ export function wrapRichText(
   getMetrics: GetSpanMetricsFn,
   options: WrapRichTextOptions,
 ): WrapRichTextResult {
-  const { lineHeight, maxLines, maxHeight } = options
+  const { lineHeightPx: lineHeight, maxLines, maxHeight } = options
   const effectiveMaxLines = resolveMaxLines(lineHeight, maxLines, maxHeight)
 
   const segments = segmentize(spans)

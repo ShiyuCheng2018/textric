@@ -222,7 +222,7 @@ export async function createMeasurer(
     const maxWidth = opts?.maxWidth ?? Infinity
 
     const result = wrapRichText(wrapSpans, maxWidth, measureSpanWidth, getMetrics, {
-      lineHeight: lineHeightPx,
+      lineHeightPx: lineHeightPx,
       maxLines: opts?.maxLines,
       maxHeight: opts?.maxHeight,
     })

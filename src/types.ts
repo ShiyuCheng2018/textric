@@ -296,7 +296,19 @@ export interface WrapRichTextSpan {
 }
 
 export interface WrapRichTextOptions {
-  lineHeight: number
+  /**
+   * Line height in pixels.
+   * - Without `lineHeightMultiplier`: uniform height for all lines.
+   * - With `lineHeightMultiplier`: fallback height for empty lines only
+   *   (lines with spans use `maxFontSizeOnLine * lineHeightMultiplier`).
+   */
+  lineHeightPx: number
+  /**
+   * Per-line dynamic height multiplier. When set, each line's height equals
+   * the tallest font size on that line times this value.
+   * Empty lines (from `\n`) fall back to `lineHeightPx`.
+   */
+  lineHeightMultiplier?: number
   maxLines?: number
   maxHeight?: number
 }
