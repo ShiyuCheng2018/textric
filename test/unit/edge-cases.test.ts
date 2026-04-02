@@ -33,10 +33,11 @@ describe('wrapText edge cases', () => {
   })
 
   it('should handle very long text (1000+ chars)', () => {
-    const longText = 'a '.repeat(500) // 1000 chars
+    const longText = 'a '.repeat(500) // 500 words of "a ", each "a " = 20px
     const result = wrapText(longText, 100, mw, { lineHeight: 20 })
-    expect(result.lineCount).toBeGreaterThan(1)
-    expect(result.height).toBeGreaterThan(0)
+    // maxWidth=100, "a " = 20px, 5 per line → 500/5 = 100 lines
+    expect(result.lineCount).toBe(100)
+    expect(result.height).toBe(100 * 20)
   })
 
   it('should handle tab characters as wrappable whitespace', () => {
@@ -57,14 +58,19 @@ describe('wrapText edge cases', () => {
     expect(result.lines).toEqual([])
   })
 
-  it('should handle emoji characters', () => {
+  it('should handle emoji characters with correct width', () => {
     const result = wrapText('Hello 👋 World', 200, mw, { lineHeight: 20 })
     expect(result.lineCount).toBe(1)
+    // Mock uses text.length (code units): 👋 = 2 code units, total = 14 * 10 = 140px
+    expect(result.maxLineWidth).toBe('Hello 👋 World'.length * 10)
+    expect(result.lines[0]).toBe('Hello 👋 World')
   })
 
-  it('should handle Unicode BOM', () => {
+  it('should handle Unicode BOM as a character', () => {
     const result = wrapText('\uFEFFHello', 200, mw, { lineHeight: 20 })
     expect(result.lineCount).toBe(1)
+    expect(result.lines[0]).toBe('\uFEFFHello')
+    expect(result.maxLineWidth).toBe([...'\uFEFFHello'].length * 10)
   })
 })
 
@@ -88,13 +94,21 @@ describe('wrapRichText edge cases', () => {
     expect(result.height).toBe(20)
   })
 
-  it('should handle many spans (100+)', () => {
+  it('should handle many spans (100+) with all text accounted for', () => {
     const spans = Array.from({ length: 100 }, (_, i) => ({
       text: `w${i} `,
       style: styleA,
     }))
     const result = wrapRichText(spans, 200, spanMw, gm, { lineHeightPx: 20 })
     expect(result.lineCount).toBeGreaterThan(1)
+    // Verify all fragments have text from the original spans
+    for (const line of result.lines) {
+      for (const frag of line.fragments) {
+        expect(frag.spanIndex).toBeGreaterThanOrEqual(0)
+        expect(frag.spanIndex).toBeLessThan(100)
+        expect(frag.text.length).toBeGreaterThan(0)
+      }
+    }
   })
 
   it('should handle span with \\n at the very end', () => {

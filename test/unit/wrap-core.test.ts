@@ -203,4 +203,32 @@ describe('wrapText', () => {
       expect(result.lineCount).toBeGreaterThanOrEqual(2)
     })
   })
+
+  describe('invariant: all line widths <= maxWidth', () => {
+    const texts = [
+      'Hello World',
+      'The quick brown fox jumps over the lazy dog',
+      'A '.repeat(100),
+      'Superlongwordwithoutanyspaces here',
+      '你好世界测试文本排版',
+      'Mixed 你好 English 世界 text',
+      'Hello\nWorld\nThree lines',
+    ]
+    const widths = [20, 50, 80, 100, 200]
+
+    for (const text of texts) {
+      for (const maxWidth of widths) {
+        it(`"${text.slice(0, 25)}..." at maxWidth=${maxWidth}`, () => {
+          const result = wrapText(text, maxWidth, mw, { lineHeight: 20 })
+          for (let i = 0; i < result.lines.length; i++) {
+            const lineWidth = mw(result.lines[i]!)
+            // Single char may exceed maxWidth (charBreak minimum progress)
+            if (result.lines[i]!.length > 1) {
+              expect(lineWidth).toBeLessThanOrEqual(maxWidth)
+            }
+          }
+        })
+      }
+    }
+  })
 })
