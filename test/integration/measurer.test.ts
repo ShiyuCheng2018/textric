@@ -227,3 +227,16 @@ describe('getFontInfo()', () => {
     expect(m.getFontInfo('Unknown')).toBeNull()
   })
 })
+
+describe('measure() — grapheme cluster handling', () => {
+  it('should not split emoji across lines', async () => {
+    const m = await createMeasurer({
+      fonts: [{ family: 'Inter', path: REGULAR_PATH, weight: 400 }],
+    })
+    const family = '👨‍👩‍👧‍👦'
+    const result = m.measure(`Text ${family} end`, { font: 'Inter', size: 16, maxWidth: 100 })
+    // The emoji should appear as a complete unit on one line (not split)
+    const emojiLine = result.lines.find(l => l.includes(family))
+    expect(emojiLine).toBeDefined()
+  })
+})
