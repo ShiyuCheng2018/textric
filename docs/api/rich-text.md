@@ -132,6 +132,22 @@ The `x` and `width` fields give you everything you need to position each fragmen
 
 ---
 
+## Text Alignment
+
+Rich text results can be aligned using the `textric/align` utility:
+
+```typescript
+import { alignRichTextResult } from 'textric/align'
+
+const result = m.measureRichText(spans, { maxWidth: 300 })
+const centered = alignRichTextResult(result, 300, 'center')
+// centered.lines[i].fragments[j].x is now shifted for center alignment
+```
+
+See [textric/align documentation](./wrap.md#textricalign--text-alignment-utilities) for full API reference.
+
+---
+
 ## Examples
 
 ### Price tag with currency symbol

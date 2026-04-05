@@ -124,6 +124,28 @@ if (info) {
 // Always load your fonts via createMeasurer() or loadFont() before measuring
 ```
 
+## Text Alignment
+
+Align text left, center, or right using the `textric/align` utility:
+
+```typescript
+import { createMeasurer } from 'textric'
+import { alignLines } from 'textric/align'
+
+const m = await createMeasurer({
+  fonts: [{ family: 'Inter', path: './fonts/Inter-Regular.ttf' }],
+})
+
+const result = m.measure('Center this text', {
+  font: 'Inter', size: 16, maxWidth: 200,
+})
+
+const offsets = alignLines(result.lineWidths, 200, 'center')
+result.lines.forEach((line, i) => {
+  console.log(`x=${offsets[i].toFixed(1)}: "${line}"`)
+})
+```
+
 ## Next Steps
 
 - [API Reference](../api/measurer.md) — complete API documentation
