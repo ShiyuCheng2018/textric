@@ -37,4 +37,7 @@ export type {
 
   // Estimate
   EstimateCharCountOptions,
+
+  // Alignment
+  TextAlign,
 } from './types.js'

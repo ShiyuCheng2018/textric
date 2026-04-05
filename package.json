@@ -14,6 +14,10 @@
     "./wrap": {
       "types": "./dist/wrap.d.ts",
       "import": "./dist/wrap.js"
+    },
+    "./align": {
+      "types": "./dist/align.d.ts",
+      "import": "./dist/align.js"
     }
   },
   "files": [

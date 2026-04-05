@@ -225,3 +225,28 @@ describe('measureRichText() — README examples', () => {
     expect(result.width).toBeCloseTo(frags[0]!.width + frags[1]!.width + frags[2]!.width, 1)
   })
 })
+
+describe('alignRichTextResult() — integration', () => {
+  it('center-aligns real measureRichText output', async () => {
+    const m = await createMeasurer({
+      fonts: [
+        { family: 'Inter', path: REGULAR_PATH, weight: 400 },
+        { family: 'Inter', path: BOLD_PATH, weight: 700 },
+      ],
+    })
+    const { alignRichTextResult } = await import('../../src/align.js')
+
+    const result = m.measureRichText([
+      { text: 'Hello ', font: 'Inter', size: 16, weight: 700 },
+      { text: 'World', font: 'Inter', size: 16 },
+    ], { maxWidth: 300 })
+
+    const centered = alignRichTextResult(result, 300, 'center')
+
+    // All fragments should be shifted right
+    expect(centered.lines[0]!.fragments[0]!.x).toBeGreaterThan(0)
+    // Offset should be (300 - lineWidth) / 2
+    const expectedOffset = (300 - result.lines[0]!.width) / 2
+    expect(centered.lines[0]!.fragments[0]!.x).toBeCloseTo(expectedOffset, 4)
+  })
+})
