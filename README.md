@@ -56,6 +56,17 @@ Textric goes one layer deeper. It reads font binary files directly with [opentyp
 
 **Use Pretext in the browser. Use Textric everywhere else.**
 
+## Live Demos
+
+Try Textric in action: **[textric-web-production.up.railway.app](https://textric-web-production.up.railway.app/)**
+
+- AI Streaming — forced reflow comparison (Traditional DOM vs Textric)
+- Poster Editor — `fitText` auto-sizing with drag-to-resize
+- Chat Bubble — Canvas-rendered bubbles with truncation detection
+- Rich Text — mixed fonts/sizes on shared baseline
+- Wrap Visualizer — line-break decisions visualized
+- Benchmark — 100–20K measurements, real throughput
+
 ## Features
 
 - **Pure JavaScript** — no Canvas, no DOM, no native dependencies (no Cairo, no Pango), no network I/O
