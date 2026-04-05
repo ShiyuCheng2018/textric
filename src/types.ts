@@ -356,3 +356,7 @@ export interface WrapRichTextResult {
   height: number
   maxLineWidth: number
 }
+
+// --- Alignment Utility Types ---
+
+export type TextAlign = 'left' | 'center' | 'right'

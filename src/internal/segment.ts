@@ -1,4 +1,5 @@
 import { isCJK } from './cjk.js'
+import { graphemes } from './grapheme.js'
 import type { SpanStyle } from '../types.js'
 
 export interface Segment {
@@ -33,7 +34,7 @@ export function segmentize(spans: SegmentInput[]): Segment[] {
 
     // Normalize line endings
     const normalized = span.text.replace(/\r\n?/g, '\n')
-    const chars = [...normalized]
+    const chars = graphemes(normalized)
     let i = 0
 
     while (i < chars.length) {

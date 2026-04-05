@@ -32,6 +32,7 @@ textric/
 ├── src/
 │   ├── index.ts              # Public API — createMeasurer + type exports
 │   ├── wrap.ts               # Sub-path entry — wrapText + wrapRichText
+│   ├── align.ts              # Sub-path entry — alignment utilities (alignLines, alignRichTextResult)
 │   ├── types.ts              # All public type definitions (interfaces)
 │   └── internal/
 │       ├── measurer.ts       # Factory function — font loading + measurement orchestration
@@ -44,6 +45,7 @@ textric/
 │       ├── font-loader.ts    # Load fonts from local file paths or in-memory buffers
 │       ├── font-cache.ts     # LRU memory cache
 │       ├── cjk.ts            # CJK character detection + kinsoku rules
+│       ├── grapheme.ts       # Intl.Segmenter grapheme cluster segmentation
 │       ├── errors.ts         # Error class hierarchy
 │       └── utils.ts          # Shared utilities
 ├── test/

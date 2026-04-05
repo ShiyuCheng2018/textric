@@ -1,5 +1,6 @@
 import type opentype from 'opentype.js'
 import type { MeasureWidthFn, SpanMetrics } from '../types.js'
+import { graphemeCount } from './grapheme.js'
 
 interface SingleLineResult {
   width: number
@@ -31,7 +32,7 @@ export function singleLineMeasure(
   }
 
   const baseWidth = font.getAdvanceWidth(text, fontSize)
-  const charCount = [...text].length // handle surrogate pairs correctly
+  const charCount = graphemeCount(text)
   const spacingTotal = letterSpacing * (charCount - 1)
 
   return {
@@ -51,7 +52,7 @@ export function createMeasureWidthFn(
   return (text: string) => {
     if (text.length === 0) return 0
     const baseWidth = font.getAdvanceWidth(text, fontSize)
-    const charCount = [...text].length
+    const charCount = graphemeCount(text)
     return baseWidth + letterSpacing * (charCount - 1)
   }
 }

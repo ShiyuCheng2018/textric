@@ -1,6 +1,6 @@
 {
   "name": "textric",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "sideEffects": false,
   "description": "Text layout for AI. Line wrapping, rich text, and precise metrics — pure JS, no browser.",
   "type": "module",
@@ -14,6 +14,10 @@
     "./wrap": {
       "types": "./dist/wrap.d.ts",
       "import": "./dist/wrap.js"
+    },
+    "./align": {
+      "types": "./dist/align.d.ts",
+      "import": "./dist/align.js"
     }
   },
   "files": [

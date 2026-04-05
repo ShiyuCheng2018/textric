@@ -122,6 +122,50 @@ interface WrapRichTextOptions {
 
 ---
 
+## `textric/align` — Text Alignment Utilities
+
+Pure functions for center and right alignment. Post-process measurement results without modifying the core API.
+
+```typescript
+import { alignLines, alignRichTextResult } from 'textric/align'
+import type { TextAlign } from 'textric/align'
+```
+
+### `alignLines(lineWidths, maxWidth, align)`
+
+Compute x-offsets for plain text lines. Returns `number[]` of pixel offsets.
+
+```typescript
+const result = m.measure(text, { font: 'Inter', size: 16, maxWidth: 300 })
+const offsets = alignLines(result.lineWidths, 300, 'center')
+
+// Render each line with offset
+result.lines.forEach((line, i) => {
+  ctx.fillText(line, offsets[i], y + i * lineHeight)
+})
+```
+
+### `alignRichTextResult(result, maxWidth, align)`
+
+Returns a new `RichTextResult` with adjusted fragment `x` positions. Does not mutate the input.
+
+```typescript
+const result = m.measureRichText(spans, { maxWidth: 300 })
+const centered = alignRichTextResult(result, 300, 'center')
+
+// centered.lines[i].fragments[j].x is now shifted for center alignment
+```
+
+### TextAlign
+
+```typescript
+type TextAlign = 'left' | 'center' | 'right'
+```
+
+`'left'` is a no-op (zero offset / returns input unchanged).
+
+---
+
 ## Why export this separately?
 
 - **Testing**: test wrapping logic without loading real fonts

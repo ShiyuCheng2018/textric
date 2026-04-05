@@ -79,6 +79,7 @@ Try Textric in action: **[textric-web-production.up.railway.app](https://textric
 - **Shrink wrap** — find the optimal container width for a given line count
 - **Batch measurement** — measure an entire page of text in one call
 - **Kerning-accurate** — real font kerning pairs, not character-width guessing
+- **Grapheme cluster aware** — emoji sequences, combining marks, and ZWJ sequences handled correctly via `Intl.Segmenter`
 
 ## Installation
 
@@ -266,11 +267,15 @@ See [docs/api](./docs/api/) for the complete API reference.
 | `m.loadFont(fontSource)` | Load a font from path or Buffer |
 | `m.getFontInfo(family)` | Get available weights and styles |
 | `m.getFontMetrics(font, size)` | Get detailed font metrics (ascent, descent, underline) |
+| `alignLines()` | Compute x-offsets for center/right alignment |
+| `alignRichTextResult()` | Align rich text fragment positions |
+
+> `alignLines()` and `alignRichTextResult()` are imported from `textric/align`.
 
 ## Limitations
 
 - **No RTL/BiDi layout** — Textric measures text width accurately for any script, but does not reorder bidirectional text. For RTL rendering, handle bidi reordering separately.
-- **Emoji width may vary** — emoji rendering is platform-dependent. Textric measures based on font glyph data, which may differ slightly from browser rendering.
+- **Emoji sequences handled** — since v2.1.0, emoji sequences (ZWJ, skin tone modifiers, flag sequences) are correctly segmented via `Intl.Segmenter`. Width measurement is based on font glyph data and may still differ slightly from browser rendering.
 - **Variable fonts (.ttf with fvar)** — not yet supported. Use static font files for now.
 
 ## Contributing

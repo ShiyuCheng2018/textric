@@ -98,4 +98,5 @@ Different tradeoff — not directly comparable:
 
 1. **First measurement per font variant is slow** (~10-50ms for parsing). Mitigate by pre-loading at startup.
 2. **CJK multi-line wrapping measures per-character.** For 1000+ character texts, this can take 5-10ms. We're working on segment-level batching to improve this.
+   - As of v2.1.0, emoji sequences and combining characters are correctly handled via `Intl.Segmenter` — they are never split mid-cluster during wrapping.
 3. **Memory usage grows with cached fonts.** Default LRU limit is 100 font variants. Adjust if needed.

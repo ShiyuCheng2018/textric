@@ -37,6 +37,7 @@ Layer 1: Font file parsing    → font.getAdvanceWidth()    ← Textric
 | **Native dependencies** | None (browser APIs) | None (pure JS) |
 | **Multi-line** | Yes (BiDi, shrink wrap, variable width) | Yes (CJK + Latin, truncation, shrink wrap) |
 | **Hot path speed** | ~0.09ms (pure arithmetic on cached widths) | ~0.1ms (glyph lookup + kerning) |
+| **Emoji/grapheme** | Via Canvas (browser handles) | **Intl.Segmenter (correct grapheme clusters)** |
 
 **They solve different problems.** Pretext eliminates DOM reflow in browsers. Textric enables text layout where there is no browser.
 

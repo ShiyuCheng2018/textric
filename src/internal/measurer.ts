@@ -7,6 +7,7 @@ import { wrapText } from './wrap-core.js'
 import { wrapRichText } from './rich-wrap-core.js'
 import { shrinkWrap as shrinkWrapInternal } from './shrink-wrap.js'
 import { FontNotFoundError, InvalidOptionsError } from './errors.js'
+import { graphemeCount } from './grapheme.js'
 import type {
   CreateMeasurerOptions,
   FontSource,
@@ -203,7 +204,7 @@ export async function createMeasurer(
       const resolved = fontIndex.get(key) ?? fallbackResolved
       if (text.length === 0) return 0
       const baseWidth = resolved.font.getAdvanceWidth(text, spanStyle.size)
-      const charCount = [...text].length
+      const charCount = graphemeCount(text)
       return baseWidth + spanStyle.letterSpacing * Math.max(0, charCount - 1)
     }
 
@@ -397,7 +398,7 @@ export async function createMeasurer(
     const sample = (opts.sampleText && opts.sampleText.length > 0)
       ? opts.sampleText
       : DEFAULT_SAMPLE
-    const charCount = [...sample].length
+    const charCount = graphemeCount(sample)
     const totalWidth = resolved.font.getAdvanceWidth(sample, opts.size)
     const avgWidth = totalWidth / charCount
 
