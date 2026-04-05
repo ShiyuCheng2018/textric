@@ -84,26 +84,25 @@ describe('known limitations — RTL and grapheme clusters', () => {
     expect(result.maxLineWidth).toBe('مرحبا'.length * 10)
   })
 
-  it('should treat multi-codepoint emoji as multiple characters', () => {
-    // Family emoji 👨‍👩‍👧‍👦 is 7 code units. Mock measures by code units, not graphemes.
-    // This documents current behavior — NOT ideal, but expected.
+  it('should treat multi-codepoint emoji as single grapheme for wrapping', () => {
     const family = '👨‍👩‍👧‍👦'
     const result = wrapText(`A ${family} B`, 200, mw, { lineHeight: 20 })
     expect(result.lineCount).toBe(1)
-    expect(result.maxLineWidth).toBe(`A ${family} B`.length * 10)
+    // Mock measures by text.length (UTF-16 code units), not graphemes.
+    // The key assertion: width equals the mock's measurement of the full string.
+    expect(result.maxLineWidth).toBe(mw(`A ${family} B`))
+
+    // Key test: the emoji is NOT split across lines even at narrow width
+    const narrow = wrapText(`A ${family} B`, 50, mw, { lineHeight: 20 })
+    // "A" (10px) fits, then family emoji token exceeds 50px → goes to next line as ONE unit
+    expect(narrow.lines.some(l => l.includes(family))).toBe(true)
   })
 
-  it('should treat combining characters as separate code units', () => {
-    // e + combining acute (é in NFD) = 2 code units
-    const nfd = 'e\u0301' // é in NFD form
-    const nfc = '\u00e9'   // é in NFC form
-    const resultNFD = wrapText(nfd, 200, mw, { lineHeight: 20 })
-    const resultNFC = wrapText(nfc, 200, mw, { lineHeight: 20 })
-    // NFD has 2 code units → 20px, NFC has 1 → 10px (mock behavior)
-    expect(resultNFD.maxLineWidth).toBe(nfd.length * 10)
-    expect(resultNFC.maxLineWidth).toBe(nfc.length * 10)
-    // These differ — documenting that Textric does not normalize Unicode forms
-    expect(resultNFD.maxLineWidth).not.toBe(resultNFC.maxLineWidth)
+  it('should not split combining characters during wrapping', () => {
+    const nfd = 'e\u0301' // é in NFD form (2 code points, 1 grapheme)
+    const result = wrapText(`X ${nfd} Y`, 200, mw, { lineHeight: 20 })
+    expect(result.lineCount).toBe(1)
+    expect(result.lines[0]).toContain(nfd)
   })
 })
 
