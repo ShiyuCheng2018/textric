@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.1.0] - 2026-04-05
+
+### Bug Fixes
+
+- **Grapheme cluster handling**: Text iteration now uses `Intl.Segmenter` instead of `[...text]` spread. Emoji sequences (family 👨‍👩‍👧‍👦, skin tones 👋🏽, flags 🇯🇵) and combining characters (e + combining acute) are no longer split during line breaking or character counting.
+
+### Features
+
+- **`textric/align` sub-export**: New `alignLines()` and `alignRichTextResult()` utility functions for left, center, and right text alignment.
+
+### Migration Note
+
+**Measurement output changes for emoji/combining characters:** The grapheme fix changes `letterSpacing` calculation (counts grapheme clusters instead of code points) and line-breaking behavior (multi-code-point sequences like family emoji are no longer split). If you have snapshot tests with emoji text, update expected values.
+
+### New Exports
+
+```ts
+import { alignLines, alignRichTextResult } from 'textric/align'
+import type { TextAlign, RichTextResult } from 'textric/align'
+```
+
 ## [2.0.0] - 2026-04-02
 
 ### Breaking Changes
