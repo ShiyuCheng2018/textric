@@ -1,4 +1,5 @@
 import { segmentize, type Segment } from './segment.js'
+import { graphemes } from './grapheme.js'
 import type {
   MeasureSpanWidthFn,
   GetSpanMetricsFn,
@@ -124,7 +125,7 @@ function buildLines(
       // If group itself exceeds maxWidth, character-break it
       if (groupWidth > maxWidth) {
         for (const seg of wordGroup) {
-          const chars = [...seg.text]
+          const chars = graphemes(seg.text)
           let acc = '' // accumulated chars for current fragment
           for (const ch of chars) {
             const trial = acc + ch
