@@ -1,5 +1,6 @@
 import { isCJK, isNoStartChar, isNoEndChar } from './cjk.js'
 import { resolveMaxLines } from './utils.js'
+import { graphemes } from './grapheme.js'
 import type { MeasureWidthFn, WrapOptions, WrapResult } from '../types.js'
 
 export function wrapText(
@@ -58,7 +59,7 @@ export function wrapText(
 
     // Only apply ellipsis if it fits within maxWidth
     if (available >= 0) {
-      const chars = [...lastLine]
+      const chars = graphemes(lastLine)
       let lo = 0
       let hi = chars.length
       while (lo < hi) {
@@ -144,7 +145,7 @@ function wrapParagraph(
     // If single token exceeds effective maxWidth, character-break it
     // Using inline logic instead of charBreak() so effectiveMaxWidth() updates per line
     if (tokenWidth > emw && currentTokens.length === 0) {
-      const chars = [...token]
+      const chars = graphemes(token)
       let acc = ''
       for (const ch of chars) {
         const trial = acc + ch
@@ -249,7 +250,7 @@ function wrapParagraph(
 function tokenize(text: string): string[] {
   const tokens: string[] = []
   let i = 0
-  const chars = [...text] // handle surrogate pairs
+  const chars = graphemes(text)
 
   while (i < chars.length) {
     const ch = chars[i]!
@@ -287,7 +288,7 @@ function charBreak(
   maxWidth: number,
   measureWidth: MeasureWidthFn,
 ): WrappedLine[] {
-  const chars = [...token]
+  const chars = graphemes(token)
   const pieces: WrappedLine[] = []
   let current = ''
 
@@ -320,9 +321,10 @@ function applyKinsoku(tokens: string[]): string[] {
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!
-    const chars = [...token]
+    const chars = graphemes(token)
 
-    // If this single-char token is a no-start char, merge with previous token
+    // If this single-grapheme token is a no-start char, merge with previous token
+    // Note: kinsoku chars (。，（ etc.) are single-code-point graphemes, so Set.has() still works
     if (chars.length === 1 && isNoStartChar(chars[0]!) && result.length > 0) {
       result[result.length - 1] = result[result.length - 1]! + token
       continue
@@ -331,7 +333,7 @@ function applyKinsoku(tokens: string[]): string[] {
     // If previous token is a single no-end char, it was already pushed.
     // Check if current token should be merged with it.
     if (result.length > 0) {
-      const prevChars = [...result[result.length - 1]!]
+      const prevChars = graphemes(result[result.length - 1]!)
       const lastPrevChar = prevChars[prevChars.length - 1]
       if (lastPrevChar && isNoEndChar(lastPrevChar) && prevChars.length === 1) {
         result[result.length - 1] = result[result.length - 1]! + token
